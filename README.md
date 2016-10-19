@@ -16,4 +16,9 @@ date : 2016
 ## Subsample your dataset (e.g. Gmax = 40mT/m) and visualize them as you like (e.g. Xaxis : bvalue or qvalue?)
 <img src="doc/ScreenShot_subsampling_bvalue.png" width="800px" align="center" />
 
+## Generate "AxCaliber" Maps
+<img src="doc/ScreenShot_Generate_Maps.png" width="800px" align="center" />
+
+
+
 
