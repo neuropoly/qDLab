@@ -7,6 +7,14 @@ contact : tanguy.duval@polymtl.ca
 institution : University Polytechnique Montreal, NeuroPoly   
 date : 2016 
 
+## Installation
+Dependences:
+- XXX (toolbox matlab)
+
+git clone
+add path to matlab
+
+
 ## Preview data in 1 voxel + fitting
 <img src="doc/ScreenShot_1voxelfitting.png" width="800px" align="center" />
 
