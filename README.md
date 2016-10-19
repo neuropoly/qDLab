@@ -7,4 +7,4 @@ contact : tanguy.duval@polymtl.ca
 institution : University Polytechnique Montreal, NeuroPoly   
 date : 2016 
 
-<img src="https://github.com/neuropoly/qDLab/tree/master/doc/ScreenShot_1voxelfitting.png" width="800px" align="center" 
+<img src="https://github.com/neuropoly/qDLab/tree/master/doc/ScreenShot_1voxelfitting.png" width="800px" align="center" />
