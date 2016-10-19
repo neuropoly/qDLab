@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="2875179255" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1412899757" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
     <param.appname>qDLab</param.appname>
     <param.authnamewatermark>Tanguy Duval</param.authnamewatermark>
     <param.email>tanguy.duval@polytml.ca</param.email>
@@ -52,6 +52,7 @@
       <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/diff.m</file>
       <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/max.m</file>
       <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/min.m</file>
+      <file>${PROJECT_ROOT}/code/Display/scd_display_Xaxiscustom.m</file>
       <file>${PROJECT_ROOT}/code/Display/scd_display_fits.m</file>
       <file>${PROJECT_ROOT}/code/Display/scd_display_qspacedata.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_diameter_map_parallel_computing.m</file>

@@ -24,7 +24,7 @@ function varargout = qDLab(varargin)
 
 % Edit the above text to modify the response to help qDLab
 
-% Last Modified by GUIDE v2.5 19-Oct-2016 17:31:02
+% Last Modified by GUIDE v2.5 19-Oct-2016 18:22:16
 
 % Begin initialization code - DO NOT EDIT
 warning('off','all');
@@ -320,10 +320,25 @@ for i_point=1:length(handles.Y) % loop on data point
         % == plot data == 
         axes(handles.plot1)
         schemeiaq = handles.scheme(handles.Selection==iaq,:);
-        [qvalues,ia,iq]=unique(schemeiaq(:,8)); schemeiaq = schemeiaq(ia,:);
+        data = squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,handles.Selection==iaq));
+        
+%         Merge same qvalues:
+%         [~,ia,iq]=unique(schemeiaq(:,8)); schemeiaq = schemeiaq(ia,:);
+%         [~,data]=consolidator(iq,data);
+        
             % abscissa
-        if get(handles.bvalue_radio,'Value'), bvals=scd_scheme2bvecsbvals(handles.scheme(handles.Selection==iaq,:)); absc=bvals(ia); else absc=qvalues; end
-        [~,data]=consolidator(iq,squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,handles.Selection==iaq)));
+        switch get(get(handles.Abscissa,'SelectedObject'),'Tag')
+            case 'bvalue_radio'
+                bvals=scd_scheme2bvecsbvals(schemeiaq); 
+                absc=bvals(ia); 
+            case 'qvalue_radio'
+                qvalues=schemeiaq(:,8);
+                absc=qvalues; 
+            case 'XaxisCustom'
+                absc=scd_display_Xaxiscustom(schemeiaq);
+                absc=absc(ia);
+        end
+        
             % normalize data
             if get(handles.plotting_normalize,'value')
                 if isempty(mdel)
@@ -855,3 +870,12 @@ function modelname_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in XaxisCustom.
+function XaxisCustom_Callback(hObject, eventdata, handles)
+% hObject    handle to XaxisCustom (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of XaxisCustom
