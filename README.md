@@ -13,7 +13,7 @@ date : 2016
 ## Compare 2 voxels
 <img src="doc/ScreenShot_comparison2voxel.png" width="800px" align="center" />
 
-## Subsample your dataset (e.g. Gmax = 40mT/m) and visualize them as you like (e.g. Xaxis:bvalue/qvalue)
+## Subsample your dataset (e.g. Gmax = 40mT/m) and visualize them as you like (e.g. Xaxis : bvalue or qvalue?)
 <img src="doc/ScreenShot_subsampling_bvalue.png" width="800px" align="center" />
 
 
