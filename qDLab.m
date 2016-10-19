@@ -24,7 +24,7 @@ function varargout = qDLab(varargin)
 
 % Edit the above text to modify the response to help qDLab
 
-% Last Modified by GUIDE v2.5 19-Oct-2016 14:35:32
+% Last Modified by GUIDE v2.5 19-Oct-2016 17:31:02
 
 % Begin initialization code - DO NOT EDIT
 warning('off','all');
@@ -531,12 +531,21 @@ switch get(get(handles.panel_noise,'SelectedObject'),'Tag')
     case 'noisepervoxel'
         Ax.noisepervoxel=1;
 end
+
+
+if get(handles.modelname,'value') == 1, 
+    Ax.optimizationfun = @scd_optimization_rician_likelihood;
+elseif get(handles.modelname,'value') == 2,
+    Ax.optimizationfun = @scd_optimization_custom_model;
+end
+
 handles.Ax = Ax;
 
 disp('<strong> Fitting voxels. please wait...</strong>')
+
 for i_point=1:length(handles.Y)
     Ax.data=squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,logical(handles.Selection)));
-    [handles.x(i_point,:), handles.modelfit{i_point}(logical(handles.Selection)),Ax_out] = scd_optimization_rician_likelihood(Ax);
+    [handles.x(i_point,:), handles.modelfit{i_point}(logical(handles.Selection)),Ax_out] = Ax.optimizationfun(Ax);
 end
 for ip=1:length(Ax_out.parametersnames)
     disp(Ax_out.parametersnames{ip})
@@ -823,3 +832,26 @@ function maskfname_button_Callback(hObject, eventdata, handles)
 [mask_fname,path] = uigetfile({'*.nii';'*.nii.gz'},'Select Mask'); handles.mask_fname_all=[path,mask_fname];
 set(handles.maskfname,'String',mask_fname);
 guidata(hObject, handles);
+
+
+% --- Executes on selection change in modelname.
+function modelname_Callback(hObject, eventdata, handles)
+% hObject    handle to modelname (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns modelname contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from modelname
+
+
+% --- Executes during object creation, after setting all properties.
+function modelname_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to modelname (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

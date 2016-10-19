@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="936441939" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="2875179255" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
     <param.appname>qDLab</param.appname>
     <param.authnamewatermark>Tanguy Duval</param.authnamewatermark>
     <param.email>tanguy.duval@polytml.ca</param.email>
@@ -9,7 +9,7 @@
     <param.summary>Quantitative Diffusion MRI Made Easy with qDLab</param.summary>
     <param.description />
     <param.screenshot>${PROJECT_ROOT}/doc/ScreenShot_1voxelfitting.png</param.screenshot>
-    <param.version>1.0</param.version>
+    <param.version>1.1</param.version>
     <param.products.name>
       <item>MATLAB</item>
       <item>Image Processing Toolbox</item>
@@ -41,7 +41,6 @@
       <param.icon />
       <param.icons />
       <param.description />
-      <param.version />
       <param.platforms />
     </unset>
     <fileset.main>
@@ -59,6 +58,7 @@
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_fitting_MCMC.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_mcmc_fit.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_model_likelihood_rician.m</file>
+      <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_optimization_custom_model.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_optimization_rician_likelihood.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_readresults.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Models/scd_model.m</file>

@@ -42,7 +42,7 @@ addOptional(p,'fitting_param','',@isstr);
 addOptional(p,'mask','');
 addOptional(p,'fitT2','true');
 addOptional(p,'Select',[]);
-
+addOptional(p,'optimizationfun',@scd_optimization_rician_likelihood);
 
 
 
@@ -168,8 +168,9 @@ for X = 1 : dims(1)
         leg{X}{iD} =  ['Delta = ' num2str(Deltavals(iD))];
         Ind_DELTA_avg{X}{iD} = find(scheme_avg(:,5)==Deltavals(iD));
     end
-    
+
     Ax(X).NOGSE = NOGSE;
+    Ax(X).optimizationfun = in.optimizationfun;
     if ~isempty(in.Select)
         Ax(X).Select = in.Select;
     end
@@ -213,7 +214,7 @@ cont=0;
 
 % init
 [X,Y,Z]=find3d(in.mask); Ax(1).data=squeeze(data_avg(X(1),Y(1),Z(1),:));
-[tmp,~,pn] = scd_optimization_rician_likelihood(Ax(1)); Nparam=length(tmp); parametersnames = pn.parametersnames;;%
+[tmp,~,pn] = Ax(1).optimizationfun(Ax(1)); Nparam=length(tmp); parametersnames = pn.parametersnames;%
 
 
 % loop (in the future: reshape data in 2D (voxel,time) and reshape again at the end...)
@@ -240,7 +241,7 @@ for Z=1:dims(3)
                     %==========================================================================
                     AxX.data = squeeze(data_avg(X,Y,Z,index)); AxX.scheme = AxX.scheme(index,:);
                     if strcmp(opt,'ML')
-                    [fitted_temp(1,Y,ibootstrap,:), Model_signal] = scd_optimization_rician_likelihood(AxX); %
+                    [fitted_temp(1,Y,ibootstrap,:), Model_signal] = AxX.optimizationfun(AxX); %
                     
                     elseif strcmp(opt,'mcmc')
                     LOOP                         = scd_fitting_MCMC(AxX.data,AxX.scheme,'plotfit',0,'perturbation',[0.01 0.01 0.1],'NN',10);
