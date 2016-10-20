@@ -16,6 +16,9 @@ date : 2016
 - Click on "model fitting" button --> CHARMED model will be fitted on the data. Results are displayed in the Matlab console
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
 
+## Support
+Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help
+
 ## Schemefile
 The schemefile describes the diffusion protocol associated to your dataset. 
 Example of schemefile : [336810.scheme](example_dataset/invivo/336810.scheme)
