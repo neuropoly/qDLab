@@ -9,6 +9,7 @@ if ~isfield(Ax,'plotfit'), Ax.plotfit=0; end
 if ~isfield(Ax,'fitT2'), Ax.fitT2=0; end
 if ~isfield(Ax,'NOGSE'), Ax.NOGSE=0; end
 Ax.output_signal=1;
+Ax.data = max(1e-3,Ax.data);
 
 [fields{1:5}]=deal('fh', 'Dh', 'diameter', 'diameter_std', 'fcsf');
 [fields{17:20}]=deal('residus', 'noise_std', 'SNR_max', 'SNR_min');
@@ -25,22 +26,22 @@ if Ax.onediam, Ax.parametersnames{4}=''; end
 
 
 %                              [fh     Dh        mean      std        fcsf    theta     Phi           S_b0 for each TE   ]
-if ~isfield(Ax,'x0'),    Ax.x0=[[0.2   0.5         6        0.5       0.01      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]' ...
-                                [0.4   0.6         6        0.5       0.01      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]' ...
-                                [0.6  0.7         6        0.5       0.01      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]' ...
-                                [0.8   0.9         6        0.5       0.01      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]' ...
-                                [0.99   1         6        0.5       0.01      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]'];  end % starting point for the optimization (multiple points for different CSF penetration)
-if ~isfield(Ax,'lb'),    Ax.lb=[0       0.3         5        0.1        0        0         0              0.7*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % lower bounds
-if ~isfield(Ax,'ub'),    Ax.ub=[1       3         10         2        0.02     90        90              1.3*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % upper bound
+if ~isfield(Ax,'x0'),    Ax.x0=[0.6  0.7         6        0.5       0.2      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]'; end
+if ~isfield(Ax,'lb'),    Ax.lb=[0       0.3         5        0.1      0        0         0              0.7*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % lower bounds
+if ~isfield(Ax,'ub'),    Ax.ub=[1       3         10         2        1     90        90              1.3*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % upper bound
 A = zeros([size(Ax.x0,1) 1])'; A(3) = -0.95; A(4) = 1; b =-0.49;
-if isfield(Ax,'Dcsf') && Ax.Dcsf, Ax.ub(5)=1; Ax.x0(5)=0.2; else Ax.parametersnames{5} = ''; end
+if ~isfield(Ax,'Dcsf') || ~Ax.Dcsf, Ax.parametersnames{5} = ''; Ax.x0(5)=0; end
 
 % Find b=0 normalization
 if Ax.fitT2
     Ax.norm = 'none'; 
     [Ax.S0, Ax.T2, Dh] = scd_assess_S0_T2_from_b0(Ax.scheme, Ax.data, 0, 1000); 
+    Ax.parametersnames{9}='T2';  Ax.parametersnames{8} = 'S0'; [Ax.parametersnames{10:end}]=deal('');
+elseif strcmp(Ax.norm,'fit')
+    Ax.S0 = scd_preproc_getIb0(Ax.data,Ax.scheme);
 else
     Ax.S0 = scd_preproc_getIb0(Ax.data,Ax.scheme);
+    [Ax.parametersnames{7:end}]=deal('');
 end
 
 if isfield(Ax,'noisepervoxel'), 
@@ -58,44 +59,27 @@ if isfield(Ax,'noisepervoxel'),
     Ax.sigma_noise = mean(STDs);
 end
 
-% find the best initialization
-Ax.corrobj=1;
-for istart = 1:size(Ax.x0,2), cost(istart) = objectivefunc(Ax.x0(:,istart),Ax); end; [~,I]=min(cost); Ax.x0 = Ax.x0(:,I);
+% define model
+fixedparam=cellfun(@isempty,Ax.parametersnames);
+modelfun = @(x,scheme) CHARMEDGPD(addfixparameters(Ax.x0,x,fixedparam),Ax.scheme,Ax); % see: >> doc lsqcurvefit 
+
+% % find the best initialization
+% Ax.corrobj=1;
+% for istart = 1:size(Ax.x0,2), cost(istart) = objectivefunc(Ax.x0(:,istart),Ax); end; [~,I]=min(cost); Ax.x0 = Ax.x0(:,I);
+
 %% FITTING
-for i=1:2 % alternate between b=0 and microstructural fitting (otherwise bad conditionning)
-    % fix b=0
-    fixedparam=[false(1,5) 2+true(1,length(unique(Ax.scheme(:,9))))];
-    if strcmp(Ax.norm,'norm'), Ax.corrobj=1; else Ax.corrobj=0; end
-    [xopt, residue]=fmincon(@(x) objectivefunc(addfixparameters(Ax.x0,x,fixedparam),Ax), double(Ax.x0(~fixedparam)), [], [], [],[],double(Ax.lb(~fixedparam)),double(Ax.ub(~fixedparam)),[],optimoptions('fmincon','MaxIter',20,'display','off'));
-    Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
-    % find b=0
-    Ax.corrobj=0;
-    fixedparam=~[false(1,7) 1 1 false(1,length(unique(Ax.scheme(:,9)))-2)];
-    [xopt, residue]=fmincon(@(x) objectivefunc(addfixparameters(Ax.x0,x,fixedparam),Ax), double(Ax.x0(~fixedparam)), A(~fixedparam), b, [],[],double(Ax.lb(~fixedparam)),double(Ax.ub(~fixedparam)),[],optimoptions('fmincon','MaxIter',20,'display','off','DiffMinChange',0.03));
-    Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
-end
-    % fix b=0
-    fixedparam=[false(1,7) true(1,length(unique(Ax.scheme(:,9))))];
-    Ax.corrobj=0;
-    [xopt, residue]=fmincon(@(x) objectivefunc(addfixparameters(Ax.x0,x,fixedparam),Ax), double(Ax.x0(~fixedparam)), [], [], [],[],double(Ax.lb(~fixedparam)),double(Ax.ub(~fixedparam)),[],optimoptions('fmincon','MaxIter',20,'display','off'));
-    Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
+% initiate with Gaussian noise assumption --> more stable fitting
+[xopt, residue] = lsqcurvefit(modelfun,Ax.x0(~fixedparam),Ax.scheme,double(Ax.data),double(Ax.lb(~fixedparam)),double(Ax.ub(~fixedparam)),optimoptions('lsqcurvefit','MaxIter',20,'display','off'));
+Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
 
-% fit all
-%[xopt, residue]=fmincon(@(x) objectivefunc(x,Ax), double(Ax.x0), A, b, [],[],double(Ax.lb),double(Ax.ub),[],optimoptions('fmincon','MaxIter',1,'display','off'));
-
+% use Rician noise and fix fix b=0
+fixedparam(6:end)=true;
+modelfun = @(x,scheme) CHARMEDGPD(addfixparameters(Ax.x0,x,fixedparam),Ax.scheme,Ax); % see: >> doc lsqcurvefit 
+[xopt, residue]=fmincon(@(x) double(-2*sum(scd_model_likelihood_rician(Ax.data,modelfun(x), Ax.sigma_noise))), double(Ax.x0(~fixedparam)), [], [], [],[],double(Ax.lb(~fixedparam)),double(Ax.ub(~fixedparam)),[],optimoptions('fmincon','MaxIter',20,'display','off','DiffMinChange',0.03));
+Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
 
 %% OUTPUTS
-if Ax.fitT2
-    S0 = xopt(8)*abs(Ax.S0); T2 = xopt(9)*abs(Ax.T2);
-    xopt(9) = T2;  xopt(8) = S0;
-    Ax.parametersnames{9}='T2';  Ax.parametersnames{8} = 'S0'; [Ax.parametersnames{10:end}]=deal('');
-    data_model = S0*exp(-Ax.scheme(:,7)./T2).*scd_model(xopt,Ax);
-elseif strcmp(Ax.norm,'fit')
-    data_model = scd_preproc_getIb0(Ax.data,Ax.scheme).*scd_model(xopt,Ax);
-else
-    data_model = scd_preproc_getIb0(Ax.data,Ax.scheme).*scd_model(xopt,Ax);
-    [Ax.parametersnames{7:end}]=deal('');
-end
+data_model=CHARMEDGPD(xopt,Ax.scheme,Ax);
 
 xopt(end+1) = residue;
 Ax.parametersnames{end+1}='residue';
@@ -116,39 +100,54 @@ Ax.parametersnames = Ax.parametersnames(~cellfun(@isempty,Ax.parametersnames));
 % disp(['Sb_0 = ', num2str(xopt(8))])
 % disp(['T2 = ', num2str(xopt(9))])
 
-function val=objectivefunc(x,Ax)
-x(isnan(x))=1;
-if ~Ax.NOGSE
-    data_exp = max(1e-3,Ax.data);
-    if Ax.fitT2
-        S0 = x(8)*abs(Ax.S0); T2 = x(9)*abs(Ax.T2);
-        data_model = S0*exp(-Ax.scheme(:,7)./T2).*scd_model(x,Ax);
-    else
-        data_model = Ax.S0.*scd_model(x,Ax);
-    end
-    %     figure(4)
-    %     hold on
-    %     l=get(gca,'xlim');
-    if Ax.corrobj
-        val=double(std(scd_model_likelihood_rician(data_exp,data_model, Ax.sigma_noise,0)));
-        %
-        %     val=double(std(data_model-data_exp));
-    else
-        val=double(-2*sum(scd_model_likelihood_rician(data_exp,data_model, Ax.sigma_noise,0)));
-    end
-    %     plot(l(2)+1,val,'+')
-    if Ax.plotfit && randn>1
-        figure(3), scd_display_fits(data_exp,data_model,Ax.scheme); drawnow
-    end
-    
-else
-    Ax.N=max(Ax.scheme(:,8)); Ax.G=Ax.scheme(:,4); Ax.x=Ax.scheme(:,5); Ax.y=Ax.scheme(:,6); Ax.TE=Ax.scheme(:,7);
-    Ax.WM_param.fh=x(1); Ax.WM_param.Dh=x(2); Ax.WM_param.R=x(3); Ax.WM_param.var=x(4); Ax.WM_param.norm=x(7); Ax.WM_param.Dr=Ax.Dr;
-    val=-2*sum(scd_model_likelihood_rician(Ax.data,scd_model_NOGSE_full(Ax), Ax.sigma_noise));
-    
-end
-val(isnan(val))=1e10;
-val(isinf(val))=1e10;
+% function val=objectivefunc(x,Ax)
+% x(isnan(x))=1;
+% if ~Ax.NOGSE
+%     
+%     if Ax.fitT2
+%         S0 = x(8)*abs(Ax.S0); T2 = x(9)*abs(Ax.T2);
+%         data_model = S0*exp(-Ax.scheme(:,7)./T2).*scd_model(x,Ax);
+%     else
+%         data_model = Ax.S0.*scd_model(x,Ax);
+%     end
+%     %     figure(4)
+%     %     hold on
+%     %     l=get(gca,'xlim');
+%     if Ax.corrobj
+%         val=double(std(scd_model_likelihood_rician(data_exp,data_model, Ax.sigma_noise,0)));
+%         %
+%         %     val=double(std(data_model-data_exp));
+%     else
+%         val=double(-2*sum(scd_model_likelihood_rician(data_exp,data_model, Ax.sigma_noise,0)));
+%     end
+%     %     plot(l(2)+1,val,'+')
+%     if Ax.plotfit && randn>1
+%         figure(3), scd_display_fits(data_exp,data_model,Ax.scheme); drawnow
+%     end
+%     
+% else
+%     Ax.N=max(Ax.scheme(:,8)); Ax.G=Ax.scheme(:,4); Ax.x=Ax.scheme(:,5); Ax.y=Ax.scheme(:,6); Ax.TE=Ax.scheme(:,7);
+%     Ax.WM_param.fh=x(1); Ax.WM_param.Dh=x(2); Ax.WM_param.R=x(3); Ax.WM_param.var=x(4); Ax.WM_param.norm=x(7); Ax.WM_param.Dr=Ax.Dr;
+%     val=-2*sum(scd_model_likelihood_rician(Ax.data,scd_model_NOGSE_full(Ax), Ax.sigma_noise));
+%     
+% end
+% val(isnan(val))=1e10;
+% val(isinf(val))=1e10;
 
 function x0 = addfixparameters(x0,x,fixedparam)
 x0(~fixedparam)=x;
+
+function data_model=CHARMEDGPD(x,scheme,Ax)
+% S0
+if Ax.fitT2
+    S0 = x(8)*abs(Ax.S0); T2 = x(9)*abs(Ax.T2);
+    S0 = S0*exp(-Ax.scheme(:,7)./T2);
+else
+    S0 = Ax.S0;
+end
+% CHARMED
+data_model = S0.*scd_model(x,Ax);
+
+if Ax.plotfit && randn>1
+    figure(3), scd_display_fits(Ax.data,data_model,Ax.scheme); drawnow
+end

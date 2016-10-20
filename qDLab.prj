@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1412899757" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="2957135884" file="/Users/taduv_admin/codes/qDLab/qDLab.prj" location="/Users/taduv_admin/codes/qDLab" name="qDLab" target="target.mlapps" target-name="Package App">
     <param.appname>qDLab</param.appname>
     <param.authnamewatermark>Tanguy Duval</param.authnamewatermark>
     <param.email>tanguy.duval@polytml.ca</param.email>
@@ -9,13 +9,12 @@
     <param.summary>Quantitative Diffusion MRI Made Easy with qDLab</param.summary>
     <param.description />
     <param.screenshot>${PROJECT_ROOT}/doc/ScreenShot_1voxelfitting.png</param.screenshot>
-    <param.version>1.1</param.version>
+    <param.version>1.3</param.version>
     <param.products.name>
       <item>MATLAB</item>
       <item>Image Processing Toolbox</item>
       <item>Optimization Toolbox</item>
       <item>Parallel Computing Toolbox</item>
-      <item>Statistical Parametric Mapping</item>
       <item>Statistics Toolbox</item>
     </param.products.name>
     <param.products.id>
@@ -23,7 +22,6 @@
       <item>17</item>
       <item>6</item>
       <item>80</item>
-      <item>-1</item>
       <item>19</item>
     </param.products.id>
     <param.products.version>
@@ -31,7 +29,6 @@
       <item>9.0</item>
       <item>7.0</item>
       <item>6.4</item>
-      <item>6313</item>
       <item>9.0</item>
     </param.products.version>
     <param.platforms />
@@ -47,11 +44,6 @@
       <file>${PROJECT_ROOT}/qDLab.m</file>
     </fileset.main>
     <fileset.depfun>
-      <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/all.m</file>
-      <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/any.m</file>
-      <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/diff.m</file>
-      <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/max.m</file>
-      <file>/Users/taduv_admin/codes/mtv/matlab/mrQ_dependencies/spm8/external/fieldtrip/fileio/@uint64/min.m</file>
       <file>${PROJECT_ROOT}/code/Display/scd_display_Xaxiscustom.m</file>
       <file>${PROJECT_ROOT}/code/Display/scd_display_fits.m</file>
       <file>${PROJECT_ROOT}/code/Display/scd_display_qspacedata.m</file>
@@ -64,8 +56,6 @@
       <file>${PROJECT_ROOT}/code/Modeling/Fitting/scd_readresults.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Models/scd_model.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Models/scd_model_GPD.m</file>
-      <file>${PROJECT_ROOT}/code/Modeling/Models/scd_model_NOGSE.m</file>
-      <file>${PROJECT_ROOT}/code/Modeling/Models/scd_model_NOGSE_full.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Preproc/scd_assess_S0_T2_from_b0.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Preproc/scd_preproc_getIb0.m</file>
       <file>${PROJECT_ROOT}/code/Modeling/Scheme/scd_scheme2bvecsbvals.m</file>
@@ -99,9 +89,16 @@
       <file>${PROJECT_ROOT}/code/Tools/sct_tool_remove_extension.m</file>
       <file>${PROJECT_ROOT}/code/Tools/selectdata_v2.m</file>
       <file>${PROJECT_ROOT}/code/Tools/txt2mat.m</file>
+      <file>${PROJECT_ROOT}/example_dataset/exvivo/2D_qspace.scheme</file>
+      <file>${PROJECT_ROOT}/example_dataset/exvivo/cat_2Dqspace.nii.gz</file>
+      <file>${PROJECT_ROOT}/example_dataset/invivo/336810.scheme</file>
+      <file>${PROJECT_ROOT}/example_dataset/invivo/Human_Cord_qspace_crop_eddy_moco.nii</file>
       <file>${PROJECT_ROOT}/qDLab.fig</file>
     </fileset.depfun>
-    <fileset.resources />
+    <fileset.resources>
+      <file>${PROJECT_ROOT}/code/scd_schemefile_create.m</file>
+      <file>${PROJECT_ROOT}/example_dataset</file>
+    </fileset.resources>
     <fileset.package />
     <build-deliverables>
       <file location="${PROJECT_ROOT}/App" name="qDLab.mlappinstall" optional="false">/Users/taduv_admin/codes/qDLab/App/qDLab.mlappinstall</file>
