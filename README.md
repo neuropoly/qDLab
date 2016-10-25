@@ -8,7 +8,7 @@ institution : University Polytechnique Montreal, NeuroPoly
 date : 2016 
 
 ## Installation
-- download and open the app : https://github.com/neuropoly/qDLab/releases/tag/1.3
+- download and open the app : https://github.com/neuropoly/qDLab/releases/tag/v1.3
 - Launch the app from Matlab App tab
 - The app will propose you to open a NIFTI file. Open one of the two [example dataset](example_dataset/exvivo/cat_2Dqspace.nii.gz).
 - The app will propose you to open a schemefile. Open one of the two [example dataset](example_dataset/exvivo/2D_qspace.scheme).
