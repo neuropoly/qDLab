@@ -17,7 +17,7 @@ date : 2016
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
 
 ## Support
-Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help
+Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help. Expect an answer in <24h.
 
 ## Schemefile
 The schemefile describes the diffusion protocol associated to your dataset. 
