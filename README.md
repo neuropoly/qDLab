@@ -3,7 +3,7 @@ Quantitative Diffusion MRI Made Easy with qDLab: a Software for Data Visualizati
 
 author : Tanguy Duval    
 contact : tanguy.duval@polymtl.ca          
-institution : University Polytechnique Montreal, NeuroPoly   
+institution : NeuroPoly Lab, Polytechnique Montreal
 date : 2016 
 
 ## Installation
