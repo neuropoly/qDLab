@@ -1,6 +1,5 @@
 # qDLab
-Quantitative Diffusion MRI Made Easy with qDLab: a Software for Data Visualization and Analysis of 1D qspac
-e sampling
+Quantitative Diffusion MRI Made Easy with qDLab: a Software for Data Visualization and Analysis of 1D qspace sampling
 
 author : Tanguy Duval    
 contact : tanguy.duval@polymtl.ca          
