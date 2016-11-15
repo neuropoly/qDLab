@@ -8,35 +8,37 @@ function [xopt, data_model, Ax]=scd_optimization_rician_likelihood(Ax)
 if ~isfield(Ax,'plotfit'), Ax.plotfit=0; end
 if ~isfield(Ax,'fitT2'), Ax.fitT2=0; end
 if ~isfield(Ax,'NOGSE'), Ax.NOGSE=0; end
+if ~isfield(Ax,'onediam'), Ax.onediam=1; end
+
 Ax.output_signal=1;
-Ax.data = max(1e-3,Ax.data);
-
-[fields{1:5}]=deal('fh', 'Dh', 'diameter', 'diameter_std', 'fcsf');
-[fields{17:20}]=deal('residus', 'noise_std', 'SNR_max', 'SNR_min');
-
+Ax.data = double(max(1e-3,Ax.data));
 
 Ax.parametersnames = {'fh','Dh','diameter_mean','diameter_STD','fcsf','',''};
-seq_values=unique(Ax.scheme(:,9));
-for iseq=1:length(seq_values)
-    ind=find(Ax.scheme(:,9)==seq_values(iseq),1,'first');
-    Ax.parametersnames{7+iseq}=['norm_TE' num2str(floor(Ax.scheme(ind,7))) 'D' num2str(floor(Ax.scheme(ind,5))) 'd' num2str(floor(Ax.scheme(ind,6)))];
+TE_values=unique(Ax.scheme(:,7));
+for iseq=1:length(TE_values)
+    ind=find(Ax.scheme(:,7)==TE_values(iseq),1,'first');
+    Ax.parametersnames{7+iseq}=['S0_TE' num2str(floor(Ax.scheme(ind,7)))];
 end
 
 if Ax.onediam, Ax.parametersnames{4}=''; end
+if Ax.onediam<0, Ax.parametersnames{4}=''; Ax.parametersnames{3}=''; end
+
 
 
 %                              [fh     Dh        mean      std        fcsf    theta     Phi           S_b0 for each TE   ]
-if ~isfield(Ax,'x0'),    Ax.x0=[0.6  0.7         6        0.5       0.2      0.1         0.1           ones(1,length(unique(Ax.scheme(:,9))))       ]'; end
-if ~isfield(Ax,'lb'),    Ax.lb=[0       0.3         5        0.1      0        0         0              0.7*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % lower bounds
-if ~isfield(Ax,'ub'),    Ax.ub=[1       3         10         2        1     90        90              1.3*ones(1,length(unique(Ax.scheme(:,9))))       ]';  end % upper bound
+if ~isfield(Ax,'x0'),    Ax.x0=[0.6     0.7        6        0.5       0.2      0.1         0.1           ones(1,length(unique(Ax.scheme(:,7))))       ]'; end
+if ~isfield(Ax,'lb'),    Ax.lb=[0       0.3        3        0.1      0        0         0              0.7*ones(1,length(unique(Ax.scheme(:,7))))       ]';  end % lower bounds
+if ~isfield(Ax,'ub'),    Ax.ub=[1       3         10         2        1     90        90              1.3*ones(1,length(unique(Ax.scheme(:,7))))       ]';  end % upper bound
 A = zeros([size(Ax.x0,1) 1])'; A(3) = -0.95; A(4) = 1; b =-0.49;
 if ~isfield(Ax,'Dcsf') || ~Ax.Dcsf, Ax.parametersnames{5} = ''; Ax.x0(5)=0; end
+
 
 % Find b=0 normalization
 if Ax.fitT2
     Ax.norm = 'none'; 
-    [Ax.S0, Ax.T2, Dh] = scd_assess_S0_T2_from_b0(Ax.scheme, Ax.data, 0, 1000); 
+    [Ax.S0, Ax.T2] = scd_assess_S0_T2_from_b0(Ax.scheme, Ax.data, 0, 1000); 
     Ax.parametersnames{9}='T2';  Ax.parametersnames{8} = 'S0'; [Ax.parametersnames{10:end}]=deal('');
+    Ax.lb(9)=0.2; Ax.ub(9)=2;
 elseif strcmp(Ax.norm,'fit')
     Ax.S0 = scd_preproc_getIb0(Ax.data,Ax.scheme);
 else
@@ -80,7 +82,9 @@ Ax.x0(~fixedparam)=xopt; xopt = Ax.x0;
 
 %% OUTPUTS
 data_model=CHARMEDGPD(xopt,Ax.scheme,Ax);
-
+if Ax.fitT2
+    xopt(9)=xopt(9)*Ax.T2;
+end
 xopt(end+1) = residue;
 Ax.parametersnames{end+1}='residue';
 
@@ -146,7 +150,7 @@ else
     S0 = Ax.S0;
 end
 % CHARMED
-data_model = S0.*scd_model(x,Ax);
+data_model = S0.*scd_model_CHARMED(x,Ax);
 
 if Ax.plotfit && randn>1
     figure(3), scd_display_fits(Ax.data,data_model,Ax.scheme); drawnow

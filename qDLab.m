@@ -24,10 +24,10 @@ function varargout = qDLab(varargin)
 
 % Edit the above text to modify the response to help qDLab
 
-% Last Modified by GUIDE v2.5 19-Oct-2016 18:22:16
+% Last Modified by GUIDE v2.5 15-Nov-2016 12:21:18
 
 % Begin initialization code - DO NOT EDIT
-warning('off','all');
+warning('off','all'); dbclear all;
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -57,8 +57,8 @@ function qDLab_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to qDLab (see VARARGIN)
 plotedit off
 % Choose default command line output for qDLab
-qDLabDir = fileparts(which(mfilename()));
-addpath(genpath(qDLabDir));
+% qDLabDir = fileparts(which(mfilename()));
+% addpath(genpath(qDLabDir));
 
 handles.output = hObject;
 handles.Z=1;
@@ -69,7 +69,7 @@ handles.mask_fname_all = '';
 if length(varargin)<1, varargin{1}=''; end
 if length(varargin)<2, varargin{2}=''; end
 handles = ChooseData(handles,varargin{1},varargin{2});
-
+if ~isfield(handles,'scheme'), help scd_schemefile_create; disp('<strong>Please select a 4D NIFTI file and a schemefile.</strong>');  close(handles.figure1); return; end
 handles.selecttoolindex = false([size(handles.scheme,1) 1]);
 
 % Simplify options depending on the dataset:
@@ -81,14 +81,22 @@ else
 end
 
     % fit diameter distribution?
-if ~sum(scd_scheme2bvecsbvals(handles.scheme)>30000), set(handles.gammadiam,'enable','off'); end % don't propose gamma distribution if maximal bvalue<30,000
+%if ~sum(scd_scheme2bvecsbvals(handles.scheme)>30000), set(handles.gammadiam,'enable','off'); end % don't propose gamma distribution if maximal bvalue<30,000
+
+
+    % Load Models
+qDLab_dir = fileparts(mfilename('fullpath'));
+CUSTOM=[qDLab_dir filesep 'code' filesep 'CUSTOM'];
+addpath(CUSTOM)
+CUSTOM_list = sct_tools_ls([CUSTOM filesep '*.m']);
+set(handles.modelname,'String',cat(1,get(handles.modelname,'String'),CUSTOM_list'))
 
     % estimate noise voxel-wise?
 [~,c]=consolidator(handles.scheme(:,1:8),[],'count');
 cmax = max(c); % find images repeated more than 5 times (for relevant STD)
-if cmax<5
+if cmax<5 && sum(handles.scheme(:,4)==0)<5
     set(handles.noisepervoxel,'enable','off')
-elseif cmax>15 % noise using STD is robust --> select this option by default
+elseif cmax>10 % noise using STD is robust --> select this option by default
     set(handles.noisepervoxel,'Value',true)
 end
 
@@ -113,7 +121,7 @@ function varargout = qDLab_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
-varargout{1} = get(handles.AcquisitionList,'UserData');
+%varargout{1} = get(handles.AcquisitionList,'UserData');
 
 
 % --- Executes on selection change in AcquisitionList.
@@ -193,7 +201,8 @@ function handles=ChooseScheme(handles,scheme_fname_all)
 
 % Hint: get(hObject,'Value') returns toggle state of ChooseScheme
 if isempty(scheme_fname_all)
-    [scheme_fname,path] = uigetfile('*','Select schemefile');scheme_fname_all=[path,scheme_fname];
+    [scheme_fname,path] = uigetfile({'*.txt;*.scheme'},'Select schemefile');
+    scheme_fname_all=[path,scheme_fname];
 else
     scheme_fname = scheme_fname_all;
 end
@@ -201,20 +210,27 @@ set(handles.textscheme,'String',['SchemeFile : ' scheme_fname])
 handles.scheme_fname_all=scheme_fname_all;
 
 if scheme_fname
-    handles.scheme=scd_schemefile_read(scheme_fname_all);
+    [handles.scheme, qspace3D]=scd_schemefile_read(scheme_fname_all);
+    if qspace3D, set(handles.Xaxis_Gz,'Value',1); set(handles.modelname,'Value',2); modelname_Callback(handles.modelname, [], handles); end
     if size(handles.data,4)~=size(handles.scheme,1), error(['<strong>Error: your dataset has ' num2str(size(handles.data,4)) ' while your schemefile has ' num2str(size(handles.scheme,1)) ' rows.</strong>']); end
 
     % sort data
     [handles.q,Isort]=sort(handles.scheme(:,8));
     handles.data=handles.data(:,:,:,Isort); handles.scheme=handles.scheme(Isort,:);
     % list acquisitions
-    handles.acqList=unique(handles.scheme(:,7:-1:5),'rows');
-    for i=1:size(handles.acqList,1), acqListString{i}=sprintf('% 15g % 15g % 15g',handles.acqList(i,:)); end
+    [~,ia]=unique(handles.scheme(:,9),'rows');
+    handles.acqList=handles.scheme(ia,[9 7:-1:5]);
+        % add Gmax
+    for i=1:size(handles.acqList,1), 
+        Gmaxaq = max(handles.scheme(handles.scheme(:,9)==handles.scheme(ia(i),9),4))*1e6;
+        handles.acqList(i,5)=Gmaxaq;
+        acqListString{i}=sprintf('%5i %10.0f %10.0f %10.0f %10.0f',handles.acqList(i,:)); 
+    end
     set(handles.AcquisitionList,'String',acqListString);
     set(handles.AcquisitionList,'Value',1:size(handles.acqList,1)); % select all by default
     % list directions
     handles.bvecs=unique(handles.scheme(:,1:3),'rows');
-    for i=1:size(handles.bvecs,1), dirList{i}=sprintf('% 15g % 15g % 15g',handles.bvecs(i,:)); end
+    for i=1:size(handles.bvecs,1), dirList{i}=sprintf('% 10.2f % 10.2f % 10.2f',handles.bvecs(i,:)); end
     set(handles.DirList,'String',dirList);
     set(handles.DirList,'Value',1:size(handles.bvecs,1)); % select all by default
 end
@@ -228,7 +244,7 @@ function handles = ChooseData(handles,data_fname_all,schemefile)
 
 % Hint: get(hObject,'Value') returns toggle state of ChooseData
 if isempty(data_fname_all)
-    [data_fname,path] = uigetfile({'*.nii';'*.nii.gz'},'Select data');handles.data_fname_all=[path,data_fname];
+    [data_fname,path] = uigetfile({'*.nii;*.nii.gz'},'Select data');handles.data_fname_all=[path,data_fname];
 else
     handles.data_fname_all = data_fname_all;
     data_fname = data_fname_all;
@@ -290,7 +306,7 @@ dir_logical = dir_logical & handles.scheme(:,4)<=(str2double(get(handles.Gmax_ed
     % Acquisitions
 handles.Selection=false;
 for i=1:length(acqselected)
-    handles.Selection=handles.Selection + i.*(dir_logical & handles.scheme(:,7)==handles.acqList(acqselected(i),1) & handles.scheme(:,6)==handles.acqList(acqselected(i),2) & handles.scheme(:,5)==handles.acqList(acqselected(i),3) & ~handles.selecttoolindex);
+    handles.Selection=handles.Selection + i.*(dir_logical & handles.scheme(:,9)==handles.acqList(acqselected(i),1) & ~handles.selecttoolindex);
 end
 
 if get(handles.jet,'Value')
@@ -304,7 +320,6 @@ S0=0;
 % plot
 for i_point=1:length(handles.Y) % loop on data point
     % Compute fitted models
-    Ax=scd_scheme2struct(handles.scheme);
     mdel=[];
     if isfield(handles,'modelfit') && ~isempty(handles.modelfit)
         mdel=handles.modelfit{i_point};
@@ -328,23 +343,33 @@ for i_point=1:length(handles.Y) % loop on data point
         
             % abscissa
         switch get(get(handles.Abscissa,'SelectedObject'),'Tag')
-            case 'bvalue_radio'
+            case 'Xaxis_bvalue'
                 bvals=scd_scheme2bvecsbvals(schemeiaq); 
-                absc=bvals(ia); 
-            case 'qvalue_radio'
+                absc=bvals; 
+            case 'Xaxis_qvalue'
                 qvalues=schemeiaq(:,8);
                 absc=qvalues; 
+            case 'Xaxis_Gz'
+                fibredir = [0 0 1];
+%                 theta = handles.x(end-2);
+%                 phi = handles.x(end-3);
+%                 fibredir = [cos(phi)*sin(theta) sin(phi)*sin(theta) cos(theta)]';
+                Gnorm = 1;
+                Gz=schemeiaq(:,1:3)*fibredir(:);
+                absc = Gz./Gnorm;
             case 'XaxisCustom'
                 absc=scd_display_Xaxiscustom(schemeiaq);
-                absc=absc(ia);
         end
-        
+        [~,order]=sort(absc); absc = absc(order); data = data(order); 
+        if ~isempty(mdel)
+            modeliaq = mdel(handles.Selection==iaq); modeliaq = modeliaq(order);
+        end
             % normalize data
             if get(handles.plotting_normalize,'value')
                 if isempty(mdel)
                     normvalue=scd_preproc_getIb0(data,schemeiaq);
                 else
-                    normvalue = max(mdel(handles.Selection==iaq));
+                    normvalue = max(modeliaq);
                 end
                 data = data./normvalue;
             else
@@ -360,7 +385,7 @@ for i_point=1:length(handles.Y) % loop on data point
         end
         % Show legend for the first point only
         if i_point==1
-            set(handles.h(plotnumber),'DisplayName',['Delta=' num2str(handles.acqList(acqselected(iaq),3)) ' delta=' num2str(handles.acqList(acqselected(iaq),2)) ' TE=' num2str(handles.acqList(acqselected(iaq),1))]);
+            set(handles.h(plotnumber),'DisplayName',['G_{max}=' num2str(handles.acqList(acqselected(iaq),5),'%.0f') 'mT/m \Delta=' num2str(handles.acqList(acqselected(iaq),4),'%.0f') 'ms \delta=' num2str(handles.acqList(acqselected(iaq),3),'%.0f') 'ms TE=' num2str(handles.acqList(acqselected(iaq),2),'%.0f') 'ms']);
         else
             hAnnotation = get(handles.h(plotnumber),'Annotation');
             hLegendEntry = get(hAnnotation','LegendInformation');
@@ -370,10 +395,8 @@ for i_point=1:length(handles.Y) % loop on data point
         
         % plot model
         if ~isempty(mdel)
-                 % abscissa
-                if get(handles.bvalue_radio,'Value'), bvals=scd_scheme2bvecsbvals(handles.scheme(handles.Selection==iaq,:)); absc=bvals; else absc=handles.q(handles.Selection==iaq); end
 
-                handles.g(iaq)=plot(absc,mdel(handles.Selection==iaq)./normvalue,'Color',handles.colorplot(plotnumber,:));
+                handles.g(iaq)=plot(absc,modeliaq./normvalue,'Color',handles.colorplot(plotnumber,:));
                 set(handles.g(iaq),'Linewidth',3)       
                 hAnnotation = get(handles.g(iaq),'Annotation');
                 hLegendEntry = get(hAnnotation','LegendInformation');
@@ -385,6 +408,7 @@ for i_point=1:length(handles.Y) % loop on data point
     end
 end
 ylim('auto')
+limits=get(gca,'Ylim'); set(gca,'Ylim',[0 limits(2)]);
 xlim('auto')
 guidata(hObject, handles);
 % display legend
@@ -518,25 +542,14 @@ function modelfitting_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 Ax.scheme=handles.scheme(logical(handles.Selection),:);
-if get(handles.norm_b0,'Value'), Ax.norm='fit'; else Ax.norm='none'; end
-if get(handles.csf,'Value'), Ax.Dcsf=str2double(get(handles.Dcsf,'String')); end
-if get(handles.onediam,'Value'), Ax.onediam=1; else Ax.onediam=0; end
 Ax.Dr=str2double(get(handles.Dr,'String'));
+Ax.Dcsf=str2double(get(handles.Dcsf,'String'));
 
-switch get(get(handles.uipanel4,'SelectedObject'),'Tag')
-    case 'norm_b0'
-        Ax.norm='none';
-    case 'norm_fit'
-        Ax.norm='fit';
-    case 'norm_fitT2'
-        Ax.norm='none';
-        Ax.fitT2=1;
-end
-        
+%if ~get(handles.csf,'Value'), Ax.Dcsf=0; end
 
 handles.x =[];
 % norm
-Ax.data=squeeze(handles.data(handles.Y(1),handles.X(1),handles.Z,logical(handles.Selection)));
+Ax.data=double(squeeze(handles.data(handles.Y(1),handles.X(1),handles.Z,logical(handles.Selection))));
 switch get(get(handles.panel_noise,'SelectedObject'),'Tag')
     case 'fixSNR'
         Ax.sigma_noise=1/str2double(get(handles.SNR,'String'))*max(Ax.data);
@@ -547,11 +560,28 @@ switch get(get(handles.panel_noise,'SelectedObject'),'Tag')
         Ax.noisepervoxel=1;
 end
 
-
-if get(handles.modelname,'value') == 1, 
+models = get(handles.modelname,'String'); models = models{get(handles.modelname,'value')};
+if strcmp(models,'CHARMED')
     Ax.optimizationfun = @scd_optimization_rician_likelihood;
-elseif get(handles.modelname,'value') == 2,
-    Ax.optimizationfun = @scd_optimization_custom_model;
+    if get(handles.norm_fit,'Value'), Ax.norm='fit'; else Ax.norm='none'; end
+    if get(handles.onediam,'Value'), Ax.onediam=1; else Ax.onediam=-1; end
+    if get(handles.norm_fitT2,'Value'), Ax.fitT2 = 1; end
+else
+    Ax.optimizationfun = str2func(strrep(models,'.m',''));
+    % create options
+    opts = handles.opts;
+    N=length(opts)/2;
+    for i=1:N
+        if islogical(opts{2*i})
+            optionvalue = get(handles.modeloption_CUSTOM_handle(i),'Value');
+        elseif isnumeric(opts{2*i})
+            optionvalue = str2num(get(handles.modeloption_CUSTOM_handle(i),'String'));
+        elseif iscell(opts{2*i})
+            optionvalue = opts{2*i}{get(handles.modeloption_CUSTOM_handle(i),'Value')};
+        end
+        Ax.(matlab.lang.makeValidName(handles.opts{2*i-1}))=optionvalue;
+    end
+    
 end
 
 handles.Ax = Ax;
@@ -643,23 +673,23 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in qvalue_radio.
-function qvalue_radio_Callback(hObject, eventdata, handles)
-% hObject    handle to qvalue_radio (see GCBO)
+% --- Executes on button press in Xaxis_qvalue.
+function Xaxis_qvalue_Callback(hObject, eventdata, handles)
+% hObject    handle to Xaxis_qvalue (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of qvalue_radio
-set(handles.bvalue_radio,'Value',0)
+% Hint: get(hObject,'Value') returns toggle state of Xaxis_qvalue
+set(handles.Xaxis_bvalue,'Value',0)
 
-% --- Executes on button press in bvalue_radio.
-function bvalue_radio_Callback(hObject, eventdata, handles)
-% hObject    handle to bvalue_radio (see GCBO)
+% --- Executes on button press in Xaxis_bvalue.
+function Xaxis_bvalue_Callback(hObject, eventdata, handles)
+% hObject    handle to Xaxis_bvalue (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of bvalue_radio
-set(handles.qvalue_radio,'Value',0)
+% Hint: get(hObject,'Value') returns toggle state of Xaxis_bvalue
+set(handles.Xaxis_qvalue,'Value',0)
 
 
 
@@ -740,7 +770,7 @@ function norm_fit_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of norm_fit
-
+if ~get(hObject,'Value'), set(handles.norm_fitT2,'Value',0); end
 
 % --- Executes on button press in norm_fitT2.
 function norm_fitT2_Callback(hObject, eventdata, handles)
@@ -749,6 +779,7 @@ function norm_fitT2_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of norm_fitT2
+if get(hObject,'Value'), set(handles.norm_fit,'Value',1); end
 
 
 % --- Executes on button press in gammadiam.
@@ -823,11 +854,19 @@ function GenerateMap_Callback(hObject, eventdata, handles)
 % hObject    handle to GenerateMap (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-mkdir('AxCaliber_Maps')
+mkdir('qDLab_Maps')
 Ax=handles.Ax; Ax=rmfield(Ax,'data'); Ax=rmfield(Ax,'scheme'); Select = ~~handles.Selection;
-save AxCaliber_Maps/fitting_param.mat Ax
-save AxCaliber_Maps/Selected_data Select
-scd_diameter_map_parallel_computing(handles.data_fname_all,handles.scheme_fname_all,'output','AxCaliber_Maps','fitting_param','AxCaliber_Maps/fitting_param.mat','parallel',num2str(get(handles.UseParallel,'Value')),'mask',handles.mask_fname_all,'Select',Select)
+save(['qDLab_Maps' filesep 'fitting_param.mat'],'Ax')
+save(['qDLab_Maps' filesep 'Selected_data'],'Select')
+choice = questdlg('Create an output folder qDLab_Maps in the current folder?','Output directory','Yes','Choose folder','Yes');
+if strcmp(choice,'Choose folder')
+    outputfolder = uigetdir('.','Select output folder');
+elseif isempty(choice)
+    return;
+else
+    outputfolder = 'qDLab_Maps';
+end
+scd_diameter_map_parallel_computing(handles.data_fname_all,handles.scheme_fname_all,'output',outputfolder,'fitting_param','qDLab_Maps/fitting_param.mat','parallel',num2str(get(handles.UseParallel,'Value')),'mask',handles.mask_fname_all,'Select',Select)
 
 
 % --- Executes on button press in UseParallel.
@@ -845,8 +884,16 @@ function maskfname_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [mask_fname,path] = uigetfile({'*.nii';'*.nii.gz'},'Select Mask'); handles.mask_fname_all=[path,mask_fname];
-set(handles.maskfname,'String',mask_fname);
-guidata(hObject, handles);
+dims=size(handles.data(:,:,:,1));
+if mask_fname
+    nii = load_untouch_nii(handles.mask_fname_all);
+    if min(size(nii.img)==dims)
+        set(handles.maskfname,'String',mask_fname);
+        guidata(hObject, handles);
+    else
+        disp('<strong>mask dimensions are different than your dataset</strong>')
+    end
+end
 
 
 % --- Executes on selection change in modelname.
@@ -857,7 +904,51 @@ function modelname_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns modelname contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from modelname
-
+contents = cellstr(get(hObject,'String'));
+switch contents{get(hObject,'Value')}
+    case 'CHARMED'
+        set(handles.modeloption_CUSTOM,'visible','off');
+        set(handles.modeloption_CHARMED,'visible','on');
+    otherwise
+        set(handles.modeloption_CHARMED,'visible','off');
+        set(handles.modeloption_CUSTOM,'visible','on');
+        
+        % delete previous
+        childs=get(handles.modeloption_CUSTOM,'Children');
+        for ic=childs, delete(ic); end
+        
+        % Create buttons
+        model=str2func(strrep(contents{get(hObject,'Value')},'.m',''));
+        try opts=model(); 
+        catch
+            opts=[]; 
+        end
+        handles.opts = opts;
+        if ~isempty(opts)
+            N = length(opts)/2;
+            [I,J]=ind2sub([4 3],1:2*N); Iw = 1/max(I); I=(I-1)/max(I); Jh = 1/max(J); J=(J-1)/max(J); J=1-J-Jh;
+            for i = 1:N
+                if islogical(opts{2*i})
+                    hInput(i) = uicontrol('Style','checkbox','String',opts{2*i-1},...
+                        'Parent',handles.modeloption_CUSTOM,'Units','normalized','Position',[[I(2*i)] J(2*i-1) Iw Jh],...
+                        'Value',opts{2*i},'HorizontalAlignment','center');
+                elseif isnumeric(opts{2*i})
+                    uicontrol('Style','Text','String',opts{2*i-1},...
+                        'Parent',handles.modeloption_CUSTOM,'Units','normalized','Position',[I(2*i-1) J(2*i-1) Iw Jh]);
+                    hInput(i) = uicontrol('Style','edit',...
+                        'Parent',handles.modeloption_CUSTOM,'Units','normalized','Position',[I(2*i) J(2*i) Iw Jh],'String',opts{2*i});
+                elseif iscell(opts{2*i})
+                    uicontrol('Style','Text','String',opts{2*i-1},...
+                        'Parent',handles.modeloption_CUSTOM,'Units','normalized','Position',[I(2*i-1) J(2*i-1) Iw Jh]);
+                    hInput(i) = uicontrol('Style','popupmenu',...
+                        'Parent',handles.modeloption_CUSTOM,'Units','normalized','Position',[I(2*i) J(2*i) Iw Jh],'String',opts{2*i});
+                    
+                end
+            end
+            handles.modeloption_CUSTOM_handle=hInput;
+        end
+end
+guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function modelname_CreateFcn(hObject, eventdata, handles)
@@ -879,3 +970,91 @@ function XaxisCustom_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of XaxisCustom
+
+
+% --- Executes during object creation, after setting all properties.
+function text33_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to text33 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes when option_CHARMED is resized.
+function option_CHARMED_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to option_CHARMED (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when modeloption_CHARMED is resized.
+function modeloption_CHARMED_ResizeFcn(hObject, eventdata, handles)
+% hObject    handle to modeloption_CHARMED (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in checkbox13.
+function checkbox13_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox13 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox13
+
+
+% --- Executes on button press in checkbox14.
+function checkbox14_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox14 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox14
+
+
+% --- Executes on button press in checkbox15.
+function checkbox15_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox15 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox15
+
+
+% --- Executes on button press in checkbox16.
+function checkbox16_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox16
+
+
+% --- Executes on selection change in noddimodellist.
+function noddimodellist_Callback(hObject, eventdata, handles)
+% hObject    handle to noddimodellist (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns noddimodellist contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from noddimodellist
+
+
+
+% --- Executes during object creation, after setting all properties.
+function noddimodellist_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to noddimodellist (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+% modellist=matlab.codetools.requiredFilesAndProducts('SynthMeas.m','toponly');
+% modellist(1)=[];
+% for im=1:length(modellist)
+%     [~,modellist{im}] = fileparts(modellist{im});
+%     modellist{im} = strrep(modellist{im},'SynthMeas','');
+% end
+% set(hObject,'String',modellist)

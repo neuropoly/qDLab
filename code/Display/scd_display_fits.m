@@ -19,6 +19,6 @@ function scd_display_fits(data,model,scheme)
 
 scd_display_qspacedata(data,scheme)
 hold on
-scd_display_qspacedata(model,scheme,'none','-')
+scd_display_qspacedata(model,scheme,0,'none','-')
 ylim([0 max(max(data), max(model))])
 

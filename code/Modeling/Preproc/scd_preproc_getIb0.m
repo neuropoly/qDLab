@@ -7,9 +7,9 @@ for i=1:length(TEs)
     if bmin>300, warning(['no b=0 data for TE = ' num2str(TEs(i))]), end
     if sum(size(data)>1)==1
         dataTE=data(indexTEi);
-        Ib0(indexTEi)=mean(dataTE(scd_scheme2bvecsbvals(scheme(indexTEi,:))==bmin));
+        Ib0(indexTEi)=median(dataTE(scd_scheme2bvecsbvals(scheme(indexTEi,:))==bmin));
     else
         dataTE=data(:,:,:,indexTEi);
-        Ib0(:,:,:,indexTEi)=repmat(mean(dataTE(:,:,:,scd_scheme2bvecsbvals(scheme(indexTEi,:))==bmin),4),[1 1 1 sum(indexTEi)]);
+        Ib0(:,:,:,indexTEi)=repmat(median(dataTE(:,:,:,scd_scheme2bvecsbvals(scheme(indexTEi,:))==bmin),4),[1 1 1 sum(indexTEi)]);
     end
 end

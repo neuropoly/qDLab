@@ -28,7 +28,7 @@ addOptional(p,'plots','0',@(x) ~isempty(str2num(x)));
 addOptional(p,'parallel','0',@(x) ~isempty(str2num(x)));
 addOptional(p,'bootstrap','1',@(x) ~isempty(str2num(x)));
 addOptional(p,'GPD','1',@(x) ~isempty(str2num(x)));
-addOptional(p,'Dcsf','1.5',@(x) ~isempty(str2num(x)));
+addOptional(p,'Dcsf','0',@(x) ~isempty(str2num(x)));
 addOptional(p,'Zstart','1',@(x) ~isempty(str2num(x)));
 addOptional(p,'remove',[],@isnumeric);
 addOptional(p,'Gmax',1e5,@isnumeric); %T/m
@@ -214,6 +214,7 @@ cont=0;
 
 % init
 [X,Y,Z]=find3d(in.mask); Ax(1).data=squeeze(data_avg(X(1),Y(1),Z(1),:));
+Ax(1).sigma_noise=Ax(1).sigma_noise(min(end,1),min(end,1),min(end,1));
 [tmp,~,pn] = Ax(1).optimizationfun(Ax(1)); Nparam=length(tmp); parametersnames = pn.parametersnames;%
 
 
@@ -289,7 +290,7 @@ if isfield(Ax(1),'Select')
     save([output 'Selected_data'],'Select')
 end
 save([output 'fitting_param'],'Ax')
-result=scd_readresults(in.data_normed,output,onediameter, scheme_avg);
+result=scd_readresults(in.data_normed,output);
 
 
 if parallel

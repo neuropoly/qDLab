@@ -1,13 +1,16 @@
-function [] = scd_display_qspacedata(data,scheme,Marker,Linestyle,color,noise)
+function [] = scd_display_qspacedata(data,scheme,bvalue,Marker,Linestyle,color,noise)
 % scd_display_qspacedata(data,scheme)
-%data: vector OR NxM matrix. N: number of measurement (=size(scheme,1)). M: number of
+% data: vector OR NxM matrix. N: number of measurement (=size(scheme,1)). M: number of
 %      observation (for error bars).
+% EXAMPLE:
+%       SCD_DISPLAY_QSPACEDATA(Smodel,Ax.scheme)
+%       SCD_DISPLAY_QSPACEDATA(Smodel,Ax.scheme,0,'x','-')
 
-%  selection=ismember(scheme(:,9),selection);
-% scheme_selected=scheme(selection,:);
 
 if ~exist('Marker','var'), Marker='x'; end
 if ~exist('Linestyle','var'), Linestyle='none'; end
+if ~exist('bvalue','var'), bvalue=0; end
+
 
 q=double(scheme(:,8));
 [q,I] = sort(q);
@@ -24,8 +27,11 @@ for iD=1:ND
     
     datavoxel=mean(squeeze(data),2);
     
-    
-    g(iD)=plot(q(seqiD),datavoxel(seqiD),'LineStyle',Linestyle, 'Marker',Marker,'Color',color(min(iD,end),:),'LineWidth',2);
+    if bvalue
+        g(iD)=plot(scd_scheme2bvecsbvals(scheme(seqiD,:)),datavoxel(seqiD),'LineStyle',Linestyle, 'Marker',Marker,'Color',color(min(iD,end),:),'LineWidth',2);
+    else
+        g(iD)=plot(q(seqiD),datavoxel(seqiD),'LineStyle',Linestyle, 'Marker',Marker,'Color',color(min(iD,end),:),'LineWidth',2);
+    end
     hold on
     
     set(g(iD),'DisplayName',['Delta=' num2str(mean(scheme(seqiD,5))) ' delta=' num2str(mean(scheme(seqiD,6))) ' TE=' num2str(mean(scheme(seqiD,7)))]);

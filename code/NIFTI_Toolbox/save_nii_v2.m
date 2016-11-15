@@ -56,9 +56,13 @@ if ~isstruct(nii)
         for it=1:size(img,4)
             tmp(:,:,:,it) = unxform_nii(nii, img(:,:,:,it));
         end
-        if size(unxform_nii(nii, nii.img(:,:,:,it))) ~= size(unxform_nii(nii, img(:,:,:,it))), error('old_nii_fname doesn''t have the same dimension as your new data'); end
+        if size(unxform_nii(nii, nii.img(:,:,:,1))) ~= size(unxform_nii(nii, img(:,:,:,1))), error('old_nii_fname doesn''t have the same dimension as your new data'); end
         nii.original.img =tmp;
+        nii.original.hdr.dime.dim(5)=size(img,4);
         nii = nii.original;
+        nii.hdr.dime.vox_offset=0;
+        nii.hdr.dime.scl_inter=0;
+        nii.hdr.dime.scl_slope=0;
     else
         error('error:usage','Usage: save_nii_v2(Matrix, filename, old_nii_fname)\n old_nii_fname is missing: You need to specify a nifti filename from which the header will be copied.')
     end
@@ -88,6 +92,6 @@ if exist('datatype','var')
 end
 
 [path, name, ext1]=fileparts(fileprefix);
-if isempty(ext1), fileprefix = [path filesep name '.nii']; end
+if isempty(ext1), fileprefix = [fileprefix '.nii']; end
 
 save_nii(nii,fileprefix)
