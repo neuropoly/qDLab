@@ -1,20 +1,22 @@
 # qDLab
-Quantitative Diffusion MRI Made Easy with qDLab: a Software for Data Visualization and Analysis of 1D qspac
-e sampling
+Quantitative Diffusion MRI Made Easy with qDLab: a Software for Data Visualization and Analysis of 1D qspace sampling
 
 author : Tanguy Duval    
 contact : tanguy.duval@polymtl.ca          
-institution : University Polytechnique Montreal, NeuroPoly   
+institution : NeuroPoly Lab, Polytechnique Montreal
 date : 2016 
 
 ## Installation
-- download and open the app : https://github.com/neuropoly/qDLab/releases/tag/1.3
+- download and open the app : https://github.com/neuropoly/qDLab/releases/tag/v1.3
 - Launch the app from Matlab App tab
 - The app will propose you to open a NIFTI file. Open one of the two [example dataset](example_dataset/exvivo/cat_2Dqspace.nii.gz).
 - The app will propose you to open a schemefile. Open one of the two [example dataset](example_dataset/exvivo/2D_qspace.scheme).
 - select a pixel and press enter --> the MRI signal in this particular pixel will be plotted
 - Click on "model fitting" button --> CHARMED model will be fitted on the data. Results are displayed in the Matlab console
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
+
+## Support
+Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help. Expect an answer in <24h.
 
 ## Schemefile
 The schemefile describes the diffusion protocol associated to your dataset. 
