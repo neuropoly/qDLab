@@ -1,4 +1,4 @@
-function [xopt, data_model, Ax]=S0_T2_D(Ax)
+function [xopt, data_model, Ax]=MONO_EXPONENTIAL(Ax)
 % xopt=scd_optimization_rician_likelihood(Ax)
 %
 % INPUT:
@@ -11,16 +11,16 @@ function [xopt, data_model, Ax]=S0_T2_D(Ax)
 % data_model : Synthetic MRI signal
 % Ax.parametersnames : name of the fitted parameters
 %
-Ax.data = double(max(eps,Ax.data));
 
 % define user options for the GUI
-if ~nargin, xopt = {'T2',true}; return; end
+if ~nargin, xopt = {'Maximal B-value :',inf}; return; end
 
+Ax.data = double(max(eps,Ax.data));
 
 % Define parameters to fit
 Ax.parametersnames = { 'S0','T2', 'D'};
  
-[S0, T2, D] = scd_assess_S0_T2_from_b0(Ax.scheme, Ax.data, 0, 1000); 
+[S0, T2, D] = scd_assess_S0_T2_from_b0(Ax.scheme, Ax.data, 0, Ax.MaximalB_value_); 
 xopt = [S0 T2 D];
 
 
