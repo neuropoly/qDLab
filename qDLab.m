@@ -356,15 +356,13 @@ for i_point=1:length(handles.Y) % loop on data point
                 qvalues=schemeiaq(:,8);
                 absc=qvalues; 
             case 'Xaxis_Gz'
-                fibredir = [0 0 1];
-%                 theta = handles.x(end-2);
-%                 phi = handles.x(end-3);
-%                 fibredir = [cos(phi)*sin(theta) sin(phi)*sin(theta) cos(theta)]';
+                [~,~,fiberdirection] = scd_model_dti(squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:)),handles.scheme);
                 Gnorm = 1;
-                Gz=schemeiaq(:,1:3)*fibredir(:);
+                Gz=schemeiaq(:,1:3)*fiberdirection(:);
                 absc = Gz./Gnorm;
             case 'XaxisCustom'
-                absc=scd_display_Xaxiscustom(schemeiaq);
+                absc_all=scd_display_Xaxiscustom(handles.scheme,squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:)));
+                absc = absc_all(handles.Selection==iaq);
         end
         [~,order]=sort(absc); absc = absc(order); data = data(order); 
         if ~isempty(mdel)
@@ -372,11 +370,8 @@ for i_point=1:length(handles.Y) % loop on data point
         end
             % normalize data
             if get(handles.plotting_normalize,'value')
-                if isempty(mdel)
-                    normvalue=scd_preproc_getIb0(data,schemeiaq);
-                else
-                    normvalue = max(modeliaq);
-                end
+                normvalue=scd_preproc_getIb0(squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:)),handles.scheme);
+                normvalue=normvalue(handles.Selection==iaq);
                 data = data./normvalue;
             else
                 normvalue = 1;
@@ -402,7 +397,7 @@ for i_point=1:length(handles.Y) % loop on data point
         % plot model
         if ~isempty(mdel)
 
-                handles.g(iaq)=plot(absc,modeliaq./normvalue,'Color',handles.colorplot(plotnumber,:));
+                handles.g(iaq)=plot(absc,modeliaq(:)./normvalue,'Color',handles.colorplot(plotnumber,:));
                 set(handles.g(iaq),'Linewidth',3)       
                 hAnnotation = get(handles.g(iaq),'Annotation');
                 hLegendEntry = get(hAnnotation','LegendInformation');
