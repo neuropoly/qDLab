@@ -356,7 +356,7 @@ for i_point=1:length(handles.Y) % loop on data point
                 qvalues=schemeiaq(:,8);
                 absc=qvalues; 
             case 'Xaxis_Gz'
-                [~,~,fiberdirection] = scd_model_dti(squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:)),handles.scheme);
+                [~,~,fiberdirection] = scd_model_dti(squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:))./scd_preproc_getIb0(squeeze(handles.data(handles.Y(i_point),handles.X(i_point),handles.Z,:)),handles.scheme),handles.scheme);
                 Gnorm = 1;
                 Gz=schemeiaq(:,1:3)*fiberdirection(:);
                 absc = Gz./Gnorm;
