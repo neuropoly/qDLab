@@ -27,8 +27,7 @@ function varargout = qDLab(varargin)
 % Last Modified by GUIDE v2.5 15-Nov-2016 12:21:18
 
 % Begin initialization code - DO NOT EDIT
-warning('off','all');
-
+warning('off','all'); 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
@@ -56,6 +55,7 @@ function qDLab_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to qDLab (see VARARGIN)
 plotedit off
+set(gcf,'WindowStyle','normal')
 % Choose default command line output for qDLab
 qDLabDir = fileparts(which(mfilename()));
 addpath(genpath(qDLabDir));
@@ -75,7 +75,7 @@ handles.selecttoolindex = false([size(handles.scheme,1) 1]);
 % Simplify options depending on the dataset:
     % fit T2?
 if length(unique(handles.scheme(scd_scheme2bvecsbvals(handles.scheme)<1000,7))) == 1 % Don't propose to fit T2 if only one echo time
-    set(handles.norm_fitT2,'enable','off');
+    set(handles.norm_fitT2,'Visible','off');
 else
     set(handles.norm_fitT2,'Value',true);
 end
@@ -90,7 +90,11 @@ CUSTOM=[qDLab_dir filesep 'code' filesep 'CUSTOM'];
 addpath(CUSTOM)
 CUSTOM_list = sct_tools_ls([CUSTOM filesep '*.m']);
 set(handles.modelname,'String',cat(1,get(handles.modelname,'String'),CUSTOM_list'))
-
+model_list=get(handles.modelname,'String');
+if handles.qspace3D && ~isempty(find(strcmp(model_list,'NODDI.m'), 1))
+    set(handles.modelname,'Value',find(strcmp(model_list,'NODDI.m'), 1))
+    handles = modelname_Callback(handles.modelname,[],handles);
+end
     % estimate noise voxel-wise?
 [~,c]=consolidator(handles.scheme(:,1:8),[],'count');
 cmax = max(c); % find images repeated more than 5 times (for relevant STD)
@@ -210,8 +214,8 @@ set(handles.textscheme,'String',['SchemeFile : ' scheme_fname])
 handles.scheme_fname_all=scheme_fname_all;
 
 if scheme_fname
-    [handles.scheme, qspace3D]=scd_schemefile_read(scheme_fname_all);
-    if qspace3D, set(handles.Xaxis_Gz,'Value',1); set(handles.modelname,'Value',2); modelname_Callback(handles.modelname, [], handles); end
+    [handles.scheme, handles.qspace3D]=scd_schemefile_read(scheme_fname_all);
+    if handles.qspace3D, set(handles.Xaxis_Gz,'Value',1);  end
     if size(handles.data,4)~=size(handles.scheme,1), error(['<strong>Error: your dataset has ' num2str(size(handles.data,4)) ' while your schemefile has ' num2str(size(handles.scheme,1)) ' rows.</strong>']); end
 
     % sort data
@@ -897,7 +901,7 @@ end
 
 
 % --- Executes on selection change in modelname.
-function modelname_Callback(hObject, eventdata, handles)
+function handles = modelname_Callback(hObject, eventdata, handles)
 % hObject    handle to modelname (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
