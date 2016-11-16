@@ -12,9 +12,9 @@ function [xopt, data_model, Ax]=CUSTOM_MODEL(Ax)
 % Ax.parametersnames : name of the fitted parameters
 %
 
-dbstop if error
+dbstop in CUSTOM_MODEL.m at 20
 
-error('edit this file with your parameters and your model!!')
+errordlg('edit this file with your parameters and your model!!')
 
 % Define parameters to fit
 Ax.parametersnames = { 'fh','Dh'};
