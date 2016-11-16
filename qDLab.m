@@ -262,6 +262,8 @@ if handles.data_fname_all
     if size(handles.data,3)>1
         set(handles.Zslider,'Max',size(handles.data,3))
         set(handles.Zslider,'SliderStep',[1 1]/(size(handles.data,3)-1))
+        set(handles.Zslider,'Value',round(size(handles.data,3)/2))
+        handles = Zslider_Callback(handles.Zslider,[],handles);
     else
         set(handles.Zslider,'HandleVisibility','off')
     end
@@ -433,7 +435,7 @@ function DisplayData_Callback(hObject, eventdata, handles)
 
 
 % --- Executes on slider movement.
-function Zslider_Callback(hObject, eventdata, handles)
+function handles = Zslider_Callback(hObject, eventdata, handles)
 % hObject    handle to Zslider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
