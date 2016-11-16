@@ -47,13 +47,13 @@ http://camino.cs.ucl.ac.uk/index.php?n=Docs.SchemeFiles
 <img src="doc/ScreenShot_1voxelfitting.png" width="800px" align="center" />
 
 ### Compare 2 voxels
-<img src="doc/ScreenShot_comparison2voxel.png" width="800px" align="center" />
+<img src="doc/ScreenShot_comparison2voxel.jpeg" width="800px" align="center" />
 
 ### Subsample your dataset (e.g. Gmax = 40mT/m) and visualize them as you like (e.g. Xaxis : bvalue or qvalue?)
 <img src="doc/ScreenShot_subsampling_bvalue.png" width="800px" align="center" />
 
 ### Generate "AxCaliber" Maps
-<img src="doc/ScreenShot_Generate_Maps.png" width="800px" align="center" />
+<img src="doc/ScreenShot_Generate_Maps.jpeg" width="800px" align="center" />
 
 ## Preprocessing
 Use your favourite software for motion correction, distortion correction, and merge your diffusion data in one NIFTI file (also merge your schemefiles accordingly!) 
