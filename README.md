@@ -15,6 +15,14 @@ date : 2016
 - Click on "model fitting" button --> CHARMED model will be fitted on the data. Results are displayed in the Matlab console
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
 
+## Enable NODDI
+- install the NODDI toolbox : http://www.nitrc.org/projects/noddi_toolbox
+- add the NODDI model to qDLab :
+  - download and copy [NODDI plugin](code/CUSTOM/NODDI.m) to *qDLab/code/CUSTOM/NODDI.m*  
+  *NB: qDLab folder can be found using the following Matlab command : ````which qDLab.m````*
+  - close and restart qDLab
+
+
 ## Support
 Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help. Expect an answer in <24h.
 
