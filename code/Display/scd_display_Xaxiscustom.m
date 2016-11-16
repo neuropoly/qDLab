@@ -3,8 +3,8 @@ function absc = scd_display_Xaxiscustom(scheme, data)
 % data : MRI Signal in the selected voxel
 % absc : Custom Xaxis along which will be plotted the functions
 
-dbstop if error
-error('Edit this file to insert your own xaxis')
+dbstop in scd_display_Xaxiscustom.m at 9
+errordlg('Edit this file to insert your own xaxis')
 
 bvec = scheme(:,[1 2 3]);
 
