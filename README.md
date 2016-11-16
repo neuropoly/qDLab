@@ -16,12 +16,7 @@ date : 2016
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
 
 ## Enable NODDI
-- install the NODDI toolbox : http://www.nitrc.org/projects/noddi_toolbox
-- add the NODDI model to qDLab :
-  - download and copy [NODDI plugin](code/CUSTOM/NODDI.m) to *qDLab/code/CUSTOM/NODDI.m*  
-  *NB: qDLab folder can be found using the following Matlab command : ````which qDLab.m````*
-  - close and restart qDLab
-
+install the NODDI toolbox and add it to your Matlab path: http://www.nitrc.org/projects/noddi_toolbox
 
 ## Support
 Use [GitHub issue](https://github.com/neuropoly/qDLab/issues/new) to report any error or for help. Expect an answer in <24h.
@@ -60,7 +55,7 @@ http://camino.cs.ucl.ac.uk/index.php?n=Docs.SchemeFiles
 ### Subsample your dataset (e.g. Gmax = 40mT/m) and visualize them as you like (e.g. Xaxis : bvalue or qvalue?)
 <img src="doc/ScreenShot_subsampling_bvalue.png" width="800px" align="center" />
 
-### Generate "AxCaliber" Maps
+### Generate Maps
 <img src="doc/ScreenShot_Generate_Maps.jpeg" width="800px" align="center" />
 
 ## Preprocessing
