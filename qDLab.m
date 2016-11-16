@@ -27,7 +27,7 @@ function varargout = qDLab(varargin)
 % Last Modified by GUIDE v2.5 15-Nov-2016 12:21:18
 
 % Begin initialization code - DO NOT EDIT
-warning('off','all'); dbclear all;
+warning('off','all');
 
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -57,8 +57,8 @@ function qDLab_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to qDLab (see VARARGIN)
 plotedit off
 % Choose default command line output for qDLab
-% qDLabDir = fileparts(which(mfilename()));
-% addpath(genpath(qDLabDir));
+qDLabDir = fileparts(which(mfilename()));
+addpath(genpath(qDLabDir));
 
 handles.output = hObject;
 handles.Z=1;
@@ -75,7 +75,7 @@ handles.selecttoolindex = false([size(handles.scheme,1) 1]);
 % Simplify options depending on the dataset:
     % fit T2?
 if length(unique(handles.scheme(scd_scheme2bvecsbvals(handles.scheme)<1000,7))) == 1 % Don't propose to fit T2 if only one echo time
-    set(handles.norm_fitT2,'Visible','off');
+    set(handles.norm_fitT2,'enable','off');
 else
     set(handles.norm_fitT2,'Value',true);
 end

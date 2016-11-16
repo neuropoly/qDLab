@@ -10,7 +10,7 @@ function [S0, T2, D] = scd_assess_S0_T2_from_b0(scheme, data, bmin, bmax)
 
 
 % extract b0 values
-indexb0 = scd_scheme2bvecsbvals(scheme)>=bmin & scd_scheme2bvecsbvals(scheme)<=bmax;
+indexb0 = scd_scheme_bvalue(scheme)*1e3>=bmin & scd_scheme_bvalue(scheme)*1e3<=bmax;
 schemeb0 = scheme(indexb0, :);
 datab0 = data(indexb0);
 
@@ -21,18 +21,41 @@ N = length(TE);
 
 if length(unique(TE))>1
     
-    A = [ones(N,1), -TE -scd_scheme2bvecsbvals(schemeb0)];
+    if length(unique(scd_scheme_bvalue(schemeb0)))>1 && max(scd_scheme_bvalue(schemeb0))*1e3>30
+        A = [ones(N,1), -TE -scd_scheme_bvalue(schemeb0)];
+        
+        % least square problem resolution
+        %xMS = (A'*A)^-1*A'*y;
+        xMS = lsqlin(A,double(y),[],[],[],[],[0 1/200 0],[inf inf 3],[],optimoptions('lsqlin','Display','off'));
+        
+        
+        S0 = exp(xMS(1));
+        T2 = 1/xMS(2);
+        D = xMS(3);
+    else
+        A = [ones(N,1), -TE];
+        
+        % least square problem resolution
+        %xMS = (A'*A)^-1*A'*y;
+        xMS = lsqlin(A,double(y),[],[],[],[],[0 1/200],[inf inf],[],optimoptions('lsqlin','Display','off'));
+        
+        
+        S0 = exp(xMS(1));
+        T2 = 1/xMS(2);
+        
+    end
+else
+    A = [ones(N,1) -scd_scheme_bvalue(schemeb0)];
     
     % least square problem resolution
     %xMS = (A'*A)^-1*A'*y;
-    xMS = lsqlin(A,double(y),[],[],[],[],[0 1/200 1/3000],[inf inf inf],[],optimoptions('lsqlin','Display','off'));
+    xMS = lsqlin(A,double(y),[],[],[],[],[0 0],[inf 3],[],optimoptions('lsqlin','Display','off'));
     
     
     S0 = exp(xMS(1));
-    T2 = 1/xMS(2);
-    D = 1/xMS(3);
-else
-    error('You need b=0 acquired at different echo times')
+    T2 = inf;
+    D = xMS(2);
+    disp('In order to measure T2, you need b=0 acquired at different echo times')
 end
 
 % 

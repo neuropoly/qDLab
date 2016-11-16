@@ -11,6 +11,7 @@ function [xopt, data_model, Ax]=S0_T2_D(Ax)
 % data_model : Synthetic MRI signal
 % Ax.parametersnames : name of the fitted parameters
 %
+Ax.data = double(max(eps,Ax.data));
 
 % define user options for the GUI
 if ~nargin, xopt = {'T2',true}; return; end
