@@ -15,7 +15,7 @@ date : 2016
 - Click on "model fitting" button --> CHARMED model will be fitted on the data. Results are displayed in the Matlab console
 - Click on "Generate Map" button --> A folder will be generated with all the fitted maps.
 
-## Enable NODDI
+### Enable NODDI
 install the NODDI toolbox and add it to your Matlab path: http://www.nitrc.org/projects/noddi_toolbox
 
 ## Support
@@ -44,6 +44,10 @@ scd_schemefile_create(bvecs_files, add_b0_beginning, DELTA, delta,Gmax, TE, acq_
 For more info see the description of the **STEJSKALTANNER** schemefile on the following link:
 http://camino.cs.ucl.ac.uk/index.php?n=Docs.SchemeFiles
 
+## Add your own model
+New quantitative Diffusion models can be easily added to qDLab by adding a Matlab file (.m) in the folder  ````qDLab/code/CUSTOM/````  
+As an example, select *CUSTOM_MODEL.m* in qDLab.  
+*Note that options can easily be added to the GUI. See qDLab/code/CUSTOM/NODDI.m*
 
 ## Features
 ### Preview data in 1 voxel + fitting
