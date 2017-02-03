@@ -1,4 +1,4 @@
-function [] = scd_display_qspacedata_3D(data, scheme, z)
+function [] = scd_display_qspacedata_3D(data, scheme)
 %chargement des données nifti
 
 
