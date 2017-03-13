@@ -546,7 +546,7 @@ Ax.scheme=handles.scheme(logical(handles.Selection),:);
 Ax.Dr=str2double(get(handles.Dr,'String'));
 Ax.Dcsf=str2double(get(handles.Dcsf,'String'));
 
-%if ~get(handles.csf,'Value'), Ax.Dcsf=0; end
+if ~get(handles.csf,'Value'), Ax.Dcsf=0; end
 
 handles.x =[];
 % norm
