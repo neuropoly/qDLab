@@ -55,8 +55,13 @@ for iD=1:ND
     end
 end
 
+if bvalue
+    xlabel('bvalue','FontSize',15); 
+else
+    xlabel('q (um-1)','FontSize',15); 
+end
 
-xlabel('q','FontSize',15); ylabel('Signal (%b0)','FontSize',15);
+ylabel('Signal (%b0)','FontSize',15);
 
 
 legend('show')

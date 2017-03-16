@@ -138,7 +138,7 @@ Er_coeff = w.*(pi*diam.^2)./(pi*sum(diam.^2.*w*resol));
 % end
 
 % Call analytical equations
-if Ax.onediam<0 % totally restricted
+if onediam<0 % totally restricted
     Er_sum =ones(size(Eh));
 else
     for i_diam=1:length(diam)
