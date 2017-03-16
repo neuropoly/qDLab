@@ -30,18 +30,16 @@ function output=scd_model_CHARMED(x,Ax)
 
 %==========================================================================
 %KEEP ALL UNITS in um/mT/ms
-if ~isfield(Ax,'data'), Ax.data=zeros(size(Ax.scheme,1),1); end
 if isfield(Ax,'index'), index = Ax.index; else index=1:size(Ax.scheme,1); end
 if isstr(Ax.scheme), Ax.scheme=scd_schemefile_read(Ax.scheme); end
 bigdelta = Ax.scheme(index,5); bigdelta=bigdelta(:);
 littledelta = Ax.scheme(index,6); littledelta=littledelta(:);
 G = Ax.scheme(index,4); G=G(:);
-Sdata=Ax.data(index); 
-Sdata=Sdata(:);
+
 x = real(x);
 fh = x(1); Dh = x(2); mean_d = x(3); std_d = x(4); fcsf = x(5); % x(6) --> useless
 x=[x(:)' ones(1,10)];
-var = std_d^2; beta=var/mean_d; alpha = mean_d/beta;
+var_d = std_d^2; beta=var_d/mean_d; alpha = mean_d/beta;
 
 
 if isfield(Ax,'Dr'), Dr = Ax.Dr; else Dr = 1.4; end % tortuosity model, D. Alexander 2008
@@ -51,8 +49,6 @@ if isfield(Ax,'HinderedOnly'), cmpEh = Ax.HinderedOnly; else cmpEh = 0; end
 if isfield(Ax,'onediam'), onediam = Ax.onediam; else onediam = 1; end
 if isfield(Ax,'fitname'), fitname = Ax.fitname; else fitname = 'fitplot'; end
 if isfield(Ax,'norm'), norm = Ax.norm; else norm.method = 'fit'; end
-if isfield(Ax,'output_signal'), output_signal = Ax.output_signal; else output_signal = 1; end
-if ~isfield(Ax,'save_plot'), Ax.save_plot=0; end
 if ~isfield(Ax,'Dcsf'), Ax.Dcsf=3; end
 if ~isfield(Ax,'fixDh'), Dh=x(2); else if Ax.fixDh, Dh=Dr*fh/(1-fcsf); end; end
 
@@ -115,13 +111,16 @@ Er_sum=zeros(length(q),1);
 % color = {'y', 'g', 'r', 'c', 'm', 'b', 'k'};
 
 % weights for axon diameter distribution (gamma distribution)
- w=pdf('Gamma',diam,alpha,beta);
+w=pdf('Gamma',diam,alpha,beta);
 % figure(56)
 % hold off
 % plot(diam,w)
 % drawnow;
-
-Er_coeff = w.*(pi*diam.^2)./(pi*sum(diam.^2.*w*resol));
+if var_d
+    Er_coeff = w.*(pi*diam.^2)./(pi*sum(diam.^2.*w*resol));
+else
+    Er_coeff=1;
+end
 
 % plotrand = randn;
 % if 1
@@ -176,7 +175,7 @@ if cmpEh, CHARMED = Eh; end
 %         hold on
 %     end
 %     hold off
-%     
+%
 %     for iseq = 1:Nb_seq
 %         figure(103)
 %         plot(q(seq_ind{iseq}),Ecsf(seq_ind{iseq}), 'Color',color{iseq})
@@ -184,13 +183,11 @@ if cmpEh, CHARMED = Eh; end
 %         hold on
 %     end
 %     hold off
-%     
+%
 % end
 
 
 
-% size_sdata=size(Sdata);
-%n_Sdata=abs(Sdata)/max(abs(Sdata));
 Nb_seq = length(unique(Ax.scheme(:,7)));
 seqnumbering = unique(Ax.scheme(:,7));
 for iseq = 1:Nb_seq
@@ -201,8 +198,8 @@ for iseq = 1:Nb_seq
         Sdata(seq_ind)=abs(Sdata(seq_ind))/max(abs(Sdata))*norm.maxvalue;
         CHARMED(seq_ind)=abs(CHARMED(seq_ind))/max(abs(CHARMED(seq_ind)))*norm.maxvalue;
     elseif strcmp(norm,'onefit')
-         Sdata(seq_ind)=abs(Sdata(seq_ind))/x(8);
-         x(iseq+8)=x(7);
+        Sdata(seq_ind)=abs(Sdata(seq_ind))/x(8);
+        x(iseq+8)=x(7);
     end
 end
 
@@ -219,10 +216,9 @@ end
 
 if figures>0, disp(['diff = ' num2str(sum(output))]); end
 
-if output_signal, output = CHARMED; 
-elseif sum(w)*resol < 0.8 && ~onediam, output = 100*ones(1,length(CHARMED));
+if  sum(w)*resol < 0.8 && ~onediam, output = 100*ones(1,length(CHARMED));
 else
-    output=(CHARMED-Sdata); %./((q+0.01)/max(q));
+    output = CHARMED;
 end
 end
 

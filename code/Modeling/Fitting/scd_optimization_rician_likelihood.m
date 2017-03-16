@@ -2,7 +2,7 @@ function [xopt, data_model, Ax]=scd_optimization_rician_likelihood(Ax)
 % xopt=scd_optimization_rician_likelihood(Ax)
 % MANDATORY:
 % Ax.scheme : protocole
-% Ax.data : données expériences
+% Ax.data : donnÃ©es expÃ©riences
 % Ax.sigma_noise
 
 if ~isfield(Ax,'plotfit'), Ax.plotfit=0; end
@@ -63,7 +63,7 @@ end
 
 % define model
 fixedparam=cellfun(@isempty,Ax.parametersnames);
-modelfun = @(x,scheme) CHARMEDGPD(addfixparameters(Ax.x0,x,fixedparam),Ax.scheme,Ax); % see: >> doc lsqcurvefit 
+modelfun = @(x,scheme) max(eps,CHARMEDGPD(addfixparameters(Ax.x0,x,fixedparam),Ax.scheme,Ax)); % see: >> doc lsqcurvefit 
 
 % % find the best initialization
 % Ax.corrobj=1;
