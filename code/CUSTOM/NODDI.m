@@ -26,14 +26,17 @@ Ax.data = double(max(eps,Ax.data));
 if exist('MakeModel.m','file') ~= 2, errordlg('Please add the NODDI Toolbox to your Matlab Path: http://www.nitrc.org/projects/noddi_toolbox','NODDI is not installed properly'); return; end
 Ax.model = MakeModel(Ax.modelName);
 
-% isoIdx=GetParameterIndex(Ax.model.name,'b0');
-% Ax.model.GD.fixed(isoIdx)=0; % gradient descent
-% Ax.model.GS.fixed(isoIdx)=0; % grid search
+isoIdx=GetParameterIndex(Ax.model.name,'di');
+Ax.model.GD.fixed(isoIdx)=0; % gradient descent
+Ax.model.GS.fixed(isoIdx)=0; % grid search
+Ax.model.GS.fixedvals(isoIdx)=Ax.Dr*1e-9;
+Ax.model.GS.fixedvals(isoIdx)=Ax.Dr*1e-9;
 
 isoIdx=GetParameterIndex(Ax.model.name,'diso');
 Ax.model.GD.fixed(isoIdx)=1; % gradient descent
 Ax.model.GS.fixed(isoIdx)=1; % grid search
 Ax.model.GS.fixedvals(isoIdx)=Ax.Dcsf*1e-9;
+Ax.model.GD.fixedvals(isoIdx)=Ax.Dcsf*1e-9;
 
 Ax.protocol = SchemeToProtocol2(Ax.scheme);
 
