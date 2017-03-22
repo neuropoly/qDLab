@@ -123,7 +123,7 @@ function varargout = qDLab_OutputFcn(hObject, eventdata, handles)
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+varargout{1} = 0;
 % Get default command line output from handles structure
 %varargout{1} = get(handles.AcquisitionList,'UserData');
 
@@ -546,7 +546,8 @@ Ax.scheme=handles.scheme(logical(handles.Selection),:);
 Ax.Dr=str2double(get(handles.Dr,'String'));
 Ax.Dcsf=str2double(get(handles.Dcsf,'String'));
 
-%if ~get(handles.csf,'Value'), Ax.Dcsf=0; end
+modelnames = get(handles.modelname,'String');
+if ~get(handles.csf,'Value') &&  strcmp(modelnames{get(handles.modelname,'Value')},'CHARMED'), Ax.Dcsf=0; end
 
 handles.x =[];
 % norm
