@@ -599,7 +599,9 @@ for ip=1:length(Ax_out.parametersnames)
 end
 
 set(handles.GenerateMap,'enable','on')
-set(handles.sigmanoise,'String',num2str(Ax_out.sigma_noise));
+if isfield(Ax_out,'sigma_noise')
+    set(handles.sigmanoise,'String',num2str(Ax_out.sigma_noise));
+end
 
 
 plotbutton_Callback(hObject, eventdata, handles)
