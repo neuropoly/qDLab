@@ -30,6 +30,7 @@ function output=scd_model_CHARMED(x,Ax)
 
 %==========================================================================
 %KEEP ALL UNITS in um/mT/ms
+
 if isfield(Ax,'index'), index = Ax.index; else index=1:size(Ax.scheme,1); end
 if isstr(Ax.scheme), Ax.scheme=scd_schemefile_read(Ax.scheme); end
 bigdelta = Ax.scheme(index,5); bigdelta=bigdelta(:);
@@ -53,7 +54,7 @@ if ~isfield(Ax,'Dcsf'), Ax.Dcsf=3; end
 if ~isfield(Ax,'fixDh'), Dh=x(2); else if Ax.fixDh, Dh=Dr*fh/(1-fcsf); end; end
 
 
-% if figures>0
+% if figures>1
 %     disp(['fh    = ' num2str(x(1))])
 %     disp(['Dh    = ' num2str(x(2))])
 %     disp(['Dr    = ' num2str(Dr)])
@@ -116,14 +117,13 @@ w=pdf('Gamma',diam,alpha,beta);
 % hold off
 % plot(diam,w)
 % drawnow;
-if var_d
+if var_d % if distribution of diameter
     Er_coeff = w.*(pi*diam.^2)./(pi*sum(diam.^2.*w*resol));
-else
+else % if single diameter
     Er_coeff=1;
 end
 
-% plotrand = randn;
-% if 1
+% if figures>1
 %     if onediam
 %         disp(['diameter :' num2str(diam)])
 %     else
@@ -144,9 +144,10 @@ else
         if (~onediam && Er_coeff(i_diam)>0.01) || i_diam==1
             R=diam(i_diam)/2;
             b=(2*pi*q).^2.*(bigdelta-littledelta/3);
-            %Er_sum= Er_sum + resol*Er_coeff(i_diam).*exp(-b.*scd_model_GPD_RDr(R*2,bigdelta,littledelta,Dr));
-            Er_sum= Er_sum + resol*Er_coeff(i_diam).*scd_model_Cyl_GPD(R,G,bigdelta,littledelta,Dr);
-            % Er_sum= Er_sum + resol*Er_coeff(i_diam).*scd_model_smallpulse(R,q,bigdelta,Dr);
+              %Er_sum= Er_sum + resol*Er_coeff(i_diam).*exp(-b.*scd_model_GPD_RDr(R*2,bigdelta,littledelta,Dr));
+             Er_sum= Er_sum + resol*Er_coeff(i_diam).*scd_model_Cyl_GPD(R,G,bigdelta,littledelta,Dr);
+             %Er_sum= Er_sum + resol*Er_coeff(i_diam).*scd_model_smallpulse(R,q,bigdelta,Dr);
+             %Er_sum= Er_sum + resol*Er_coeff(i_diam).*exp(CylNeumanLePerp_PGSE(Dr*1e-9, R*1e-6, G*1e3, bigdelta*1e-3, littledelta*1e-3, BesselJ_RootsCyl));
         end
     end %a loop
     Er_sum = Er_sum./sum(resol*Er_coeff(Er_coeff>0.01));
@@ -187,6 +188,9 @@ if cmpEh, CHARMED = Eh; end
 % end
 
 
+%==========================================================================
+% Normalize S0
+%==========================================================================
 
 Nb_seq = length(unique(Ax.scheme(:,7)));
 seqnumbering = unique(Ax.scheme(:,7));
@@ -212,11 +216,7 @@ end
 %     drawnow;
 % end
 
-
-
-if figures>0, disp(['diff = ' num2str(sum(output))]); end
-
-if  sum(w)*resol < 0.8 && ~onediam, output = 100*ones(1,length(CHARMED));
+if  sum(w)*resol < 0.8 && ~onediam, output = 100*ones(1,length(CHARMED)); % If diameter distribution  outside the range [0 10]. Output is absurd
 else
     output = CHARMED;
 end

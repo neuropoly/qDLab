@@ -23,7 +23,7 @@ else
     
     
     % ===========================================
-    % Model for cylinders
+    % Model for cylinders (Neuman Equation)
     % ===========================================
     % L. Z. WANG 1995: The Narrow-Pulse Criterion for Pulsed-Gradient Spin-Echo Diffusion Measurements
     % Bessel roots:
