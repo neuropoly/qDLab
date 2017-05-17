@@ -3,39 +3,27 @@ function scheme=scd_schemefile_create(bvecs_files, add_b0_beginning, DELTA, delt
 %   
 %     bvecs_files=cell array of [bvec files OR bvecs matrices].
 %
-%     Example:
-%       bvecs_mat = [ones(150,1), zeros(150,1), zeros(150,1)];
-%       bvecs_mat_cell = {bvecs_mat, bvecs_mat};
+%     Example 1 (generate schemefile from FSL bvec files):
+%       bvecs_files = {'bvecs.txt', 'bvecs.txt'}; 
 %       add_b0_beginning = 0;
 %       DELTA       = [20 35]*1e-3; % s
 %       delta       = [8  8 ]*1e-3; % s
-%       Gmax        = [380 380]*1e-3; % T/m
+%       Gmax        = [80 80]*1e-3; % T/m
 %       TE          = [69 70]*1e-3; %s
 %       acq_basename= date;
-%       scheme=SCD_SCHEMEFILE_CREATE(bvecs_mat_cell, add_b0_beginning, DELTA, delta,Gmax, TE, acq_basename);
+%       scheme=SCD_SCHEMEFILE_CREATE(bvecs_files, add_b0_beginning, DELTA, delta,Gmax, TE, acq_basename);%
 %
-%
-%     Example 2:
+%     Example 2 (generate schemefile from a matrice of bvectors):
 %       bvecs_mat = [linspace(-1,1,150)', zeros(150,1), zeros(150,1)];
 %       bvecs_mat_cell = {bvecs_mat, bvecs_mat};
 %       add_b0_beginning = 0;
 %       DELTA       = [20 35]*1e-3; % s
 %       delta       = [8  8 ]*1e-3; % s
-%       Gmax        = [380 380]*1e-3; % T/m
+%       Gmax        = [80 80]*1e-3; % T/m
 %       TE          = [69 70]*1e-3; %s
 %       acq_basename= date;
 %       scheme=SCD_SCHEMEFILE_CREATE(bvecs_mat_cell, add_b0_beginning, DELTA, delta,Gmax, TE, acq_basename);
 %
-%
-%     Example 3:
-%       bvecs_files = {'bvecs.txt', 'bvecs.txt'}; 
-%       add_b0_beginning = 0;
-%       DELTA       = [20 35]*1e-3; % s
-%       delta       = [8  8 ]*1e-3; % s
-%       Gmax        = [380 380]*1e-3; % T/m
-%       TE          = [69 70]*1e-3; %s
-%       acq_basename= date;
-%       scheme=SCD_SCHEMEFILE_CREATE(bvecs_files, add_b0_beginning, DELTA, delta,Gmax, TE, acq_basename);
 %
 % SEE ALSO: scd_scheme_display
 
